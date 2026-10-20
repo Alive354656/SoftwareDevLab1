@@ -103,6 +103,19 @@ export abstract class Shape {
     return null;
   }
 
+  // 沿父指针向上找。Document 不是 Shape，走到画布就停；自己不算自己的子孙。
+  encloses(descendant: Shape): boolean {
+    const self: Shape = this;
+    let owner: Document | Group | null = descendant.parent;
+    while (owner instanceof Shape) {
+      if (owner === self) {
+        return true;
+      }
+      owner = owner.parent;
+    }
+    return false;
+  }
+
   abstract captureFields(): FieldSnapshot;
 
   abstract restoreFields(snapshot: FieldSnapshot): void;

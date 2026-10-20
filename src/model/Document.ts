@@ -80,6 +80,41 @@ export class Document {
     this.reindex();
   }
 
+  // 文档先序：先节点，再按其子节点当前顺序。
+  orderByDocument(shapes: readonly Shape[]): Shape[] {
+    const rank = new Map<Shape, number>();
+    let next = 0;
+    const visit = (shape: Shape): void => {
+      rank.set(shape, next);
+      next += 1;
+      shape.forEachChild(visit);
+    };
+    for (const root of this.roots) {
+      visit(root);
+    }
+    return shapes.slice().sort((left, right) => {
+      const leftRank = rank.get(left);
+      const rightRank = rank.get(right);
+      if (leftRank === undefined || rightRank === undefined) {
+        throw new Error("shape is not in the document");
+      }
+      return leftRank - rightRank;
+    });
+  }
+
+  indexInParent(shape: Shape): number {
+    const children = this.siblings(shape);
+    const index = children.indexOf(shape);
+    if (index < 0) {
+      throw new Error("shape is not a child of this parent");
+    }
+    return index;
+  }
+
+  siblingCount(shape: Shape): number {
+    return this.siblings(shape).length;
+  }
+
   insertChild(shape: Shape, index: number): void {
     if (index < 0 || index > this.roots.length) {
       throw new Error("index out of range");
@@ -190,6 +225,17 @@ export class Document {
     const body = this.roots.map(shape => shape.writeSvg("  ")).join("\n");
     const svg = body === "" ? `${open}\n</svg>` : `${open}\n${body}\n</svg>`;
     return `<?xml version="1.0" encoding="UTF-8"?>\n${svg}\n`;
+  }
+
+  private siblings(shape: Shape): readonly Shape[] {
+    const parent = shape.parent;
+    if (parent instanceof Group) {
+      return parent.copyChildren();
+    }
+    if (parent === this) {
+      return this.roots;
+    }
+    throw new Error("shape is not in the document");
   }
 
   private assertNoCycle(parent: Document | Group, shape: Shape): void {
