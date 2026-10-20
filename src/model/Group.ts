@@ -29,6 +29,10 @@ export class Group extends Shape {
     return "g";
   }
 
+  override asContainer(): Group {
+    return this;
+  }
+
   constructor(id: string) {
     super(id);
   }

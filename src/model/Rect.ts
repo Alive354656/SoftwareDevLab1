@@ -87,6 +87,26 @@ export class Rect extends Shape {
     this.yValue += dy;
   }
 
+  protected override anchorText(): string {
+    return `(${NumberText.format(this.xValue)},${NumberText.format(this.yValue)})`;
+  }
+
+  protected override geometryAssignment(name: string): string | undefined {
+    if (name === "x") {
+      return `x=${NumberText.format(this.xValue)}`;
+    }
+    if (name === "y") {
+      return `y=${NumberText.format(this.yValue)}`;
+    }
+    if (name === "width") {
+      return `width=${NumberText.format(this.widthValue)}`;
+    }
+    if (name === "height") {
+      return `height=${NumberText.format(this.heightValue)}`;
+    }
+    return undefined;
+  }
+
   override captureFields(): RectFields {
     return {
       kind: "rect",

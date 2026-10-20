@@ -89,6 +89,26 @@ export class Line extends Shape {
     this.y2Value += dy;
   }
 
+  protected override anchorText(): string {
+    return `(${NumberText.format(this.x1Value)},${NumberText.format(this.y1Value)})`;
+  }
+
+  protected override geometryAssignment(name: string): string | undefined {
+    if (name === "x1") {
+      return `x1=${NumberText.format(this.x1Value)}`;
+    }
+    if (name === "y1") {
+      return `y1=${NumberText.format(this.y1Value)}`;
+    }
+    if (name === "x2") {
+      return `x2=${NumberText.format(this.x2Value)}`;
+    }
+    if (name === "y2") {
+      return `y2=${NumberText.format(this.y2Value)}`;
+    }
+    return undefined;
+  }
+
   override captureFields(): LineFields {
     return {
       kind: "line",

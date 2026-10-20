@@ -20,4 +20,8 @@ export abstract class Command {
   execute(_ctx: EditorContext): CommandResult {
     throw new Error(`not implemented: ${this.constructor.name}`);
   }
+
+  undo(): string {
+    throw new Error(`not implemented: undo ${this.constructor.name}`);
+  }
 }

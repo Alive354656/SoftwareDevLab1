@@ -13,6 +13,11 @@ export interface FieldSnapshot {
   readonly strokeWidth: number | undefined;
 }
 
+export interface FieldRecord {
+  readonly shape: Shape;
+  readonly fields: FieldSnapshot;
+}
+
 export abstract class Shape {
   private parentNode: Document | Group | null = null;
   protected fillValue: string | undefined;
@@ -67,6 +72,37 @@ export abstract class Shape {
     throw new ModelError(`unknown attribute: ${name}`);
   }
 
+  // 叶子给出当前锚点；组没有坐标，返回 null，文案改用位移。
+  describeMove(dx: number, dy: number, undone: boolean): string {
+    const point = this.anchorText();
+    if (point === null) {
+      const x = undone ? -dx : dx;
+      const y = undone ? -dy : dy;
+      const verb = undone ? "moved back by" : "moved by";
+      return `${this.label()} ${verb} (${NumberText.format(x)},${NumberText.format(y)})`;
+    }
+    const verb = undone ? "moved back to" : "moved to";
+    return `${this.label()} ${verb} ${point}`;
+  }
+
+  assignmentText(name: string): string | undefined {
+    const geometry = this.geometryAssignment(name);
+    if (geometry !== undefined) {
+      return geometry;
+    }
+    return this.appearanceAssignment(name);
+  }
+
+  collectFields(): FieldRecord[] {
+    const records: FieldRecord[] = [];
+    this.collectFieldRecords(records);
+    return records;
+  }
+
+  asContainer(): Group | null {
+    return null;
+  }
+
   abstract captureFields(): FieldSnapshot;
 
   abstract restoreFields(snapshot: FieldSnapshot): void;
@@ -110,6 +146,14 @@ export abstract class Shape {
   collectGroups(_groups: Group[]): void {}
 
   protected abstract applyScale(factor: number): void;
+
+  protected anchorText(): string | null {
+    return null;
+  }
+
+  protected geometryAssignment(_name: string): string | undefined {
+    return undefined;
+  }
 
   protected assignOwnAttribute(_name: string, _value: string): boolean {
     return false;
@@ -182,6 +226,26 @@ export abstract class Shape {
     }
   }
 
+  private collectFieldRecords(records: FieldRecord[]): void {
+    records.push({ shape: this, fields: this.captureFields() });
+    this.forEachChild(child => child.collectFieldRecords(records));
+  }
+
+  private appearanceAssignment(name: string): string | undefined {
+    if (name === "fill") {
+      return this.fillValue === undefined ? undefined : `fill=${this.fillValue}`;
+    }
+    if (name === "stroke") {
+      return this.strokeValue === undefined ? undefined : `stroke=${this.strokeValue}`;
+    }
+    if (name === "stroke-width") {
+      return this.strokeWidthValue === undefined
+        ? undefined
+        : `stroke-width=${NumberText.format(this.strokeWidthValue)}`;
+    }
+    return undefined;
+  }
+
   private appearanceDetail(): string {
     const parts: string[] = [];
     if (this.fillValue !== undefined) {
@@ -208,5 +272,11 @@ export abstract class Shape {
       attributes.push(`stroke-width="${NumberText.format(this.strokeWidthValue)}"`);
     }
     return attributes;
+  }
+}
+
+export function restoreFieldRecords(records: readonly FieldRecord[]): void {
+  for (const record of records) {
+    record.shape.restoreFields(record.fields);
   }
 }

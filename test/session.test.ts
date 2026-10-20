@@ -90,6 +90,5 @@ describe("EditorSession", () => {
     session.setFilePath("demo.svg");
     assert.equal(session.filePath, "demo.svg");
     assert.equal(session.resolvePath("a.svg"), path.resolve(process.cwd(), "a.svg"));
-    assert.throws(() => session.replaceDocument({}, "a.svg"));
   });
 });

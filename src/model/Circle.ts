@@ -79,6 +79,23 @@ export class Circle extends Shape {
     this.cyValue += dy;
   }
 
+  protected override anchorText(): string {
+    return `(${NumberText.format(this.cxValue)},${NumberText.format(this.cyValue)})`;
+  }
+
+  protected override geometryAssignment(name: string): string | undefined {
+    if (name === "cx") {
+      return `cx=${NumberText.format(this.cxValue)}`;
+    }
+    if (name === "cy") {
+      return `cy=${NumberText.format(this.cyValue)}`;
+    }
+    if (name === "r") {
+      return `r=${NumberText.format(this.rValue)}`;
+    }
+    return undefined;
+  }
+
   override captureFields(): CircleFields {
     return {
       kind: "circle",

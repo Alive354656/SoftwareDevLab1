@@ -74,6 +74,23 @@ export class Text extends Shape {
     this.yValue += dy;
   }
 
+  protected override anchorText(): string {
+    return `(${NumberText.format(this.xValue)},${NumberText.format(this.yValue)})`;
+  }
+
+  protected override geometryAssignment(name: string): string | undefined {
+    if (name === "x") {
+      return `x=${NumberText.format(this.xValue)}`;
+    }
+    if (name === "y") {
+      return `y=${NumberText.format(this.yValue)}`;
+    }
+    if (name === "text") {
+      return `text="${this.displayContent()}"`;
+    }
+    return undefined;
+  }
+
   override captureFields(): TextFields {
     return {
       kind: "text",

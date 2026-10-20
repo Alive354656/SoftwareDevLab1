@@ -9,6 +9,7 @@ import { Shape } from "./Shape";
 import { Text } from "./Text";
 
 interface ShapeKind {
+  readonly usage: string;
   readonly consumed: ReadonlySet<string>;
   create(id: string, params: readonly string[]): Shape;
   fromElement(element: ElementData, id: string): Shape;
@@ -25,6 +26,18 @@ export class ShapeFactory {
     ["text", Text],
     ["g", Group],
   ]);
+
+  supports(type: string): boolean {
+    return ShapeFactory.kinds.has(type);
+  }
+
+  usage(type: string): string {
+    const kind = ShapeFactory.kinds.get(type);
+    if (kind === undefined) {
+      throw new ModelError(`unknown shape type: ${type} (is the plugin loaded?)`);
+    }
+    return kind.usage;
+  }
 
   create(type: string, id: string, params: readonly string[]): Shape {
     const kind = ShapeFactory.kinds.get(type);
