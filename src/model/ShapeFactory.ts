@@ -31,6 +31,15 @@ export class ShapeFactory {
     return ShapeFactory.kinds.has(type);
   }
 
+  // 读取器只问这张表，自己不再按标签分支。
+  consumedAttributes(tag: string): ReadonlySet<string> {
+    const kind = ShapeFactory.kinds.get(tag);
+    if (kind === undefined) {
+      throw new ModelError(`unsupported element: ${tag}`);
+    }
+    return kind.consumed;
+  }
+
   usage(type: string): string {
     const kind = ShapeFactory.kinds.get(type);
     if (kind === undefined) {
